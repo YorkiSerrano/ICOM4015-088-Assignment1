@@ -1,5 +1,7 @@
 import java.awt.Color;
+//import java.awt.Font;
 import java.awt.Graphics;
+
 import java.awt.Insets;
 import java.util.Random;
 import javax.swing.JPanel;
@@ -7,12 +9,12 @@ import javax.swing.JPanel;
 public class MyPanel extends JPanel {
 	private static final long serialVersionUID = 3426940946811133635L;
 //----------------------------------------------------------------------------------------------------------------------------------
-	private static final int GRID_X = 42;
-	private static final int GRID_Y = 45;
+	private static final int GRID_X = 25;
+	private static final int GRID_Y = 25;
 	private static final int INNER_CELL_SIZE = 29;
 	private static final int TOTAL_COLUMNS = 9;
 	private static final int TOTAL_ROWS = 9; 
-	public static final int MINE_VALUE = 1;
+	public static final int MINE = 1;
 	
 	public int x = -1;
 	public int y = -1;
@@ -22,6 +24,8 @@ public class MyPanel extends JPanel {
 	public int mouseDownGridY = 0;
 	
 	public Color[][] colorArray = new Color[TOTAL_COLUMNS][TOTAL_ROWS];
+	
+	public int[][] mineArray = new int[TOTAL_COLUMNS][TOTAL_ROWS];
 	
 	public int[][] numberArray = new int[TOTAL_COLUMNS][TOTAL_ROWS];
 
@@ -47,7 +51,7 @@ public class MyPanel extends JPanel {
 //Assign 0 to all grids
 		for(int x = 0; x < TOTAL_COLUMNS; x++){
 			for(int y = 0; y < TOTAL_ROWS; y++){
-				numberArray[x][y] = 0;
+				mineArray[x][y] = 0;
 			}
 		}
 //-----------------------------------------------------------------------------------------------------------------------------------
@@ -60,8 +64,8 @@ public class MyPanel extends JPanel {
 			int xRandom = randomGrid.nextInt(9);
 			int yRandom = randomGrid.nextInt(9);
 
-			if(!(numberArray[xRandom][yRandom] == MINE_VALUE && totalMines != 0)){
-				numberArray[xRandom][yRandom] = MINE_VALUE;
+			if(!(mineArray[xRandom][yRandom] == MINE && totalMines != 0)){
+				mineArray[xRandom][yRandom] = MINE;
 				System.out.println("Coordinate: (" + xRandom + "," + yRandom + ")\n"); //Debugging Purposes
 				totalMines--;
 			}
@@ -72,7 +76,10 @@ public class MyPanel extends JPanel {
 //Painting
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-
+		
+		
+        
+        
 		//Compute interior coordinates
 		
 		Insets myInsets = getInsets();
@@ -106,11 +113,22 @@ public class MyPanel extends JPanel {
 		
 		for (int x = 0; x < TOTAL_COLUMNS; x++) {
 			for (int y = 0; y < TOTAL_ROWS; y++) {
+				
+				
 				//if(x != TOTAL_COLUMNS-1 || y!= TOTAL_ROWS-1){
 				if ((x == 0) || (y != TOTAL_ROWS)) {
 					Color c = colorArray[x][y];
 					g.setColor(c);
 					g.fillRect(x1 + GRID_X + (x * (INNER_CELL_SIZE + 1)) + 1, y1 + GRID_Y + (y * (INNER_CELL_SIZE + 1)) + 1, INNER_CELL_SIZE, INNER_CELL_SIZE);
+					
+//					if(c == Color.WHITE && mineArray[x][y] != 0){
+//						g.setColor(Color.YELLOW);
+//						System.out.println(mineArray[x][y]);
+
+//						g.setFont(new Font("TimesRoman", Font.BOLD, 20));
+//						g.drawString(String.valueOf(mineArray[x][y]), getGridX(x, y), getGridY(x, y));
+				//	}
+					
 				}
 			}
 		}
@@ -137,7 +155,7 @@ public class MyPanel extends JPanel {
 		x = x / (INNER_CELL_SIZE + 1);
 		y = y / (INNER_CELL_SIZE + 1);
 		
-		if (x < 0 || x > TOTAL_COLUMNS - 2 || y < 0 || y > TOTAL_ROWS - 2) {   //Outside the rest of the grid
+		if (x < 0 || x > TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS - 1) {   //Outside the rest of the grid
 			return -1;
 		}
 		return x;
@@ -163,10 +181,75 @@ public class MyPanel extends JPanel {
 		x = x / (INNER_CELL_SIZE + 1);
 		y = y / (INNER_CELL_SIZE + 1);
 		
-		if (x < 0 || x > TOTAL_COLUMNS - 2 || y < 0 || y > TOTAL_ROWS - 2) {   //Outside the rest of the grid
+		if (x < 0 || x> TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS - 1) {   //Outside the rest of the grid
 			return -1;
 		}
 		return y;
 	}
+//----------------------------------------------------------------------------------------------------------------------------------
+//Open Grids
+	public void unhideGrids(int x, int y){
+		int totalMines = 0;
+		int xLeft;
+		int xRight;
+		int yTop;
+		int yBottom;
+		
+		if(x == 0){
+			xLeft = 0;
+		}else{
+			xLeft = x - 1;
+		}
+		if(x >= 8){
+			xRight = 8;
+		}else{
+			xRight = x + 1;
+		}
+		if(y <= 0){
+			yTop = 0;
+		}else{
+			yTop = y - 1;
+		}
+		if(y >= 8){
+			yBottom = 8;
+		}else{
+			yBottom = y + 1;
+		}
+//----------------------------------------------------------------------------------------------------------------------------------
+		if (mineArray[x][y] == MINE){
+			Game minesweeper = new Game();
+			minesweeper.gameLost();
+		}else{
+			for(int a = xLeft; a <= xRight; a++){
+				for(int b = yTop; b <= yBottom; b++){
+					if (mineArray[a][b] == MINE){
+						totalMines++;
+					}
+				}
+			}			
+			if (totalMines != 0){
+				colorArray[x][y] = Color.WHITE;
+				mineArray[x][y] = totalMines;
+			}
+			else{
+				
+			}
+			System.out.println(totalMines);
+			System.out.println(mineArray[x][y]);
+		}
+	}
 
 }
+
+
+
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
