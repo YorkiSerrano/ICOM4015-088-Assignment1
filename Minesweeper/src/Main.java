@@ -9,7 +9,8 @@ public class Main {
 
 		MyPanel myPanel = new MyPanel();
 		myFrame.add(myPanel);
-
+		
+		myPanel.setGame();
 		MyMouseAdapter myMouseAdapter = new MyMouseAdapter();
 		myFrame.addMouseListener(myMouseAdapter);
 
