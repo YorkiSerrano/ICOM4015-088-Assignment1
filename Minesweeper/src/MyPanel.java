@@ -4,13 +4,15 @@ import java.awt.Graphics;
 
 import java.awt.Insets;
 import java.util.Random;
+
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class MyPanel extends JPanel {
 	private static final long serialVersionUID = 3426940946811133635L;
 //----------------------------------------------------------------------------------------------------------------------------------
-	private static final int GRID_X = 25;
-	private static final int GRID_Y = 25;
+	private static final int GRID_X = 45;
+	private static final int GRID_Y = 45;
 	private static final int INNER_CELL_SIZE = 29;
 	private static final int TOTAL_COLUMNS = 9;
 	private static final int TOTAL_ROWS = 9; 
@@ -28,6 +30,10 @@ public class MyPanel extends JPanel {
 	public int[][] mineArray = new int[TOTAL_COLUMNS][TOTAL_ROWS];
 	
 	public int[][] numberArray = new int[TOTAL_COLUMNS][TOTAL_ROWS];
+	
+	public boolean[][] hiddenArray = new boolean[TOTAL_COLUMNS][TOTAL_ROWS];
+	
+	
 
 	public MyPanel() {   //This is the constructor... this code runs first to initialize
 		
@@ -41,45 +47,13 @@ public class MyPanel extends JPanel {
 			throw new RuntimeException("TOTAL_ROWS must be at least 3!");
 		}
 //-----------------------------------------------------------------------------------------------------------------------------------		
-//Paint all grids gray initially
-		for (int x =0; x < TOTAL_COLUMNS; x++) {   
-			for (int y = 0; y < TOTAL_ROWS; y++) {
-				colorArray[x][y] = Color.LIGHT_GRAY;
-			}
-		}
-//-----------------------------------------------------------------------------------------------------------------------------------
-//Assign 0 to all grids
-		for(int x = 0; x < TOTAL_COLUMNS; x++){
-			for(int y = 0; y < TOTAL_ROWS; y++){
-				mineArray[x][y] = 0;
-			}
-		}
-//-----------------------------------------------------------------------------------------------------------------------------------
-//Mine Setter
-		
-		Random randomGrid = new Random();
-			
-		while(totalMines != 0){
-
-			int xRandom = randomGrid.nextInt(9);
-			int yRandom = randomGrid.nextInt(9);
-
-			if(!(mineArray[xRandom][yRandom] == MINE && totalMines != 0)){
-				mineArray[xRandom][yRandom] = MINE;
-				System.out.println("Coordinate: (" + xRandom + "," + yRandom + ")\n"); //Debugging Purposes
-				totalMines--;
-			}
-		}
-		}
+		newGame();
+}
 	
 //-----------------------------------------------------------------------------------------------------------------------------------
 //Painting
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
-		
-        
-        
 		//Compute interior coordinates
 		
 		Insets myInsets = getInsets();
@@ -112,23 +86,11 @@ public class MyPanel extends JPanel {
 //Paint cell colors
 		
 		for (int x = 0; x < TOTAL_COLUMNS; x++) {
-			for (int y = 0; y < TOTAL_ROWS; y++) {
-				
-				
-				//if(x != TOTAL_COLUMNS-1 || y!= TOTAL_ROWS-1){
+			for (int y = 0; y < TOTAL_ROWS; y++) {		
 				if ((x == 0) || (y != TOTAL_ROWS)) {
 					Color c = colorArray[x][y];
 					g.setColor(c);
 					g.fillRect(x1 + GRID_X + (x * (INNER_CELL_SIZE + 1)) + 1, y1 + GRID_Y + (y * (INNER_CELL_SIZE + 1)) + 1, INNER_CELL_SIZE, INNER_CELL_SIZE);
-					
-//					if(c == Color.WHITE && mineArray[x][y] != 0){
-//						g.setColor(Color.YELLOW);
-//						System.out.println(mineArray[x][y]);
-
-//						g.setFont(new Font("TimesRoman", Font.BOLD, 20));
-//						g.drawString(String.valueOf(mineArray[x][y]), getGridX(x, y), getGridY(x, y));
-				//	}
-					
 				}
 			}
 		}
@@ -188,68 +150,116 @@ public class MyPanel extends JPanel {
 	}
 //----------------------------------------------------------------------------------------------------------------------------------
 //Open Grids
-	public void unhideGrids(int x, int y){
+	public void setGame(){
+		setMines();
+		for (int x = 0; x < TOTAL_COLUMNS; x++) {
+			for (int y = 0; y < TOTAL_ROWS; y++) {
+				numberArray[x][y]=countMines(x, y);
+			}
+		}
+	}
+	public void setMines(){
+		Random randomGrid = new Random();	
+		while(totalMines != 0){
+
+			int xRandom = randomGrid.nextInt(9);
+			int yRandom = randomGrid.nextInt(9);
+
+			if(!(mineArray[xRandom][yRandom] == MINE && totalMines != 0)){
+				mineArray[xRandom][yRandom] = MINE;
+				System.out.println("Coordniates:("+xRandom+","+yRandom+")");
+				totalMines--;
+			}
+		}
+	}
+	
+public int countMines(int x, int y){
+		
 		int totalMines = 0;
 		int xLeft;
 		int xRight;
 		int yTop;
 		int yBottom;
 		
-		if(x == 0){
-			xLeft = 0;
-		}else{
-			xLeft = x - 1;
-		}
-		if(x >= 8){
-			xRight = 8;
-		}else{
-			xRight = x + 1;
-		}
-		if(y <= 0){
-			yTop = 0;
-		}else{
-			yTop = y - 1;
-		}
-		if(y >= 8){
-			yBottom = 8;
-		}else{
-			yBottom = y + 1;
-		}
-//----------------------------------------------------------------------------------------------------------------------------------
-		if (mineArray[x][y] == MINE){
-			Game minesweeper = new Game();
-			minesweeper.gameLost();
-		}else{
-			for(int a = xLeft; a <= xRight; a++){
-				for(int b = yTop; b <= yBottom; b++){
-					if (mineArray[a][b] == MINE){
+		if(x == 0){xLeft = 0;}else{xLeft = x - 1;}
+		if(x >= 8){xRight = 8;}else{xRight = x + 1;}
+		if(y == 0){yTop = 0;}else{yTop = y - 1;}
+		if(y >= 8){yBottom = 8;}else{yBottom = y + 1;}
+		
+		for (int a = xLeft; a <= xRight; a++){
+			for(int b = yTop; b <= yBottom; b++){
+				if(a == x && b == y){
+					//do nothing
+				}else{
+					if(mineArray[a][b] == 1){
 						totalMines++;
 					}
 				}
-			}			
-			if (totalMines != 0){
-				colorArray[x][y] = Color.WHITE;
-				mineArray[x][y] = totalMines;
 			}
-			else{
-				
+		}
+		return totalMines;
+	}
+public void lostGame(){
+	for (int x = 0; x < TOTAL_COLUMNS; x++) {
+		for (int y = 0; y < TOTAL_ROWS; y++) {
+			if(mineArray[x][y]==MINE){
+				colorArray[x][y]=Color.BLACK;
 			}
-			System.out.println(totalMines);
-			System.out.println(mineArray[x][y]);
 		}
 	}
-
+		int confirmation = JOptionPane.showConfirmDialog(null, "You lost! Want to play again?", null, JOptionPane.YES_NO_OPTION);
+		if(confirmation == JOptionPane.YES_OPTION){
+			JOptionPane.showMessageDialog(null, "Let's get ready!");
+			newGame();
+			totalMines=10;
+			setGame();
+		
+		}
+		else{
+			JOptionPane.showMessageDialog(null, "Thank You for playing!");
+			System.exit(0);
+		}
+	}
+public void gameWon(){
+	int TOTAL_GRIDS = 0;
+	if(TOTAL_GRIDS ==10){
+		int confirmation = JOptionPane.showConfirmDialog(null, "You win! Want to play again?", null, JOptionPane.YES_NO_OPTION);
+		if(confirmation == JOptionPane.YES_OPTION){
+			JOptionPane.showMessageDialog(null, "Let's get started");
+			newGame();
+			totalMines=10;
+			setGame();
+		}
+		else{
+			JOptionPane.showMessageDialog(null, "Thank You for playing!");
+			System.exit(0);
+		}
+	}
 }
-
-
-
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
+public void newGame(){
+	//Assign 0 to all grids
+	for (int x =0; x < TOTAL_COLUMNS; x++) {   
+		for (int y = 0; y < TOTAL_ROWS; y++) {
+			colorArray[x][y] = Color.LIGHT_GRAY;
+		}
+	}
+	//Assign 0 to all grids
+	for(int x = 0; x < TOTAL_COLUMNS; x++){
+		for(int y = 0; y < TOTAL_ROWS; y++){
+			mineArray[x][y] = 0;
+		}
+	}
+	//Assign 0 to all grids
+	for(int x = 0; x < TOTAL_COLUMNS; x++){
+		for(int y = 0; y < TOTAL_ROWS; y++){
+			numberArray[x][y] = 0;
+		}
+	}
+	//Assign false to all grids
+	for(int x = 0; x < TOTAL_COLUMNS; x++){
+		for(int y = 0; y < TOTAL_ROWS; y++){
+			hiddenArray[x][y] = true;
+		}
+	}
+}
+}					
