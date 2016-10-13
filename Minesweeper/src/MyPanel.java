@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.Polygon;
 import java.util.Random;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -15,14 +16,15 @@ public class MyPanel extends JPanel {
 	private static final int TOTAL_COLUMNS = 9;
 	private static final int TOTAL_ROWS = 9; 
 	public static final int MINE = -1;
-
+	
+	public int flagCounter =10;
 	public int x = -1;
 	public int y = -1;
 	
 	public int totalMines = 10;
 	public int mouseDownGridX = 0;
 	public int mouseDownGridY = 0;
-	public boolean winGameVar = false;
+	public boolean winGameStatus = false;
 	
 	public Color[][] colorArray = new Color[TOTAL_COLUMNS][TOTAL_ROWS];			//Holds each grid's color
 	public boolean[][] hiddenArray = new boolean[TOTAL_COLUMNS][TOTAL_ROWS];	//Holds grid's status: hidden or pressed
@@ -80,13 +82,14 @@ public class MyPanel extends JPanel {
 		for (int x = 0; x <= TOTAL_COLUMNS; x++) {
 			g.drawLine(x1 + GRID_X + (x * (INNER_CELL_SIZE + 1)), y1 + GRID_Y, x1 + GRID_X + (x * (INNER_CELL_SIZE + 1)), y1 + GRID_Y + ((INNER_CELL_SIZE + 1) * (TOTAL_ROWS)));
 		}
+		
+		
 		//-----------------------------------------------------------------------------------------------------------------------------------
 		//Paint cell colors
 
 		for (int x = 0; x < TOTAL_COLUMNS; x++) {
 			for (int y = 0; y < TOTAL_ROWS; y++) {
 
-				if ((x == 0) || (y != TOTAL_ROWS)) {
 					Color c = colorArray[x][y];
 					g.setColor(c);
 					g.fillRect(GRID_X + x1 + ((INNER_CELL_SIZE + 1) * x) + 1, y1 + GRID_Y + ((INNER_CELL_SIZE + 1) * y) + 1, INNER_CELL_SIZE, INNER_CELL_SIZE);
@@ -105,14 +108,57 @@ public class MyPanel extends JPanel {
 		//-----------------------------------------------------------------------------------------------------------------------------------								
 		//Draw 'You win!' Message
 						
-						if(winGameVar){
-							g.setColor(Color.ORANGE);
-							gridFont = new Font("Times New Roman", Font.BOLD, 200);
-							g.drawString("You win!", 210, 320);
+						if(winGameStatus){
+							g.setColor(Color.BLACK);
+							gridFont = new Font("Times New Roman", Font.BOLD, 24);
+							g.setFont(gridFont);
+							g.drawString("You win!", getWidth()-100, getHeight()-22);
 						}
 					}
-				}
-			}
+		//-----------------------------------------------------------------------------------------------------------------------------------								
+		//Draw Mines
+					
+					//draw mines
+					if(mineArray[x][y]==MINE && colorArray[x][y] == Color.WHITE){
+						
+						g.setColor(Color.BLACK);
+						g.drawLine(x1+(GRID_X+3)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+3)+((INNER_CELL_SIZE+1)*y),x1+(GRID_X+28)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+28)+((INNER_CELL_SIZE+1)*y));
+						g.drawLine(x1+(GRID_X+28)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+3)+((INNER_CELL_SIZE+1)*y),x1+(GRID_X+3)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+28)+((INNER_CELL_SIZE+1)*y));
+						g.drawLine(x1+(GRID_X+2)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+15)+((INNER_CELL_SIZE+1)*y),x1+(GRID_X+28)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+15)+((INNER_CELL_SIZE+1)*y));
+						g.drawLine(x1+(GRID_X+15)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+2)+((INNER_CELL_SIZE+1)*y),x1+(GRID_X+15)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+28)+((INNER_CELL_SIZE+1)*y));
+						g.fillOval(x1+(GRID_X+4)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+4)+((INNER_CELL_SIZE+1)*y), 22, 22);
+					}
+					//draw flag
+					if(colorArray[x][y]==Color.YELLOW){
+						//flag
+						Polygon flag = new Polygon();
+						flag.addPoint(x1+(GRID_X+8)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+8)+((INNER_CELL_SIZE+1)*y));
+						flag.addPoint(x1+(GRID_X+23)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+13)+((INNER_CELL_SIZE+1)*y));
+						flag.addPoint(x1+(GRID_X+8)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+18)+((INNER_CELL_SIZE+1)*y));
+						g.setColor(Color.RED);
+						
+					    //flag pole
+						g.fillPolygon(flag);
+						g.setColor(Color.BLACK);
+						g.fillRect(x1+(GRID_X+7)+((INNER_CELL_SIZE+1)*x),y1+(GRID_Y+7)+((INNER_CELL_SIZE+1)*y), 2, 20);
+					}
+		}
+		//draw flag counter
+		Font flagCounterFont = new Font("Times New Roman",Font.BOLD,12);
+		g.setFont(flagCounterFont);
+		g.setColor(Color.LIGHT_GRAY);
+		g.fillRect(getWidth()/12, getHeight()-40, 100, 30);
+		g.setColor(Color.BLACK);
+		g.drawString("Flags Left:"+String.valueOf(flagCounter), getWidth()/6, getHeight()-20);
+		
+		Polygon flag = new Polygon();
+		flag.addPoint(getWidth()/11,getHeight()-35);
+		flag.addPoint(getWidth()/7,getHeight()-30);
+		flag.addPoint(getWidth()/11,getHeight()-25);
+		g.setColor(Color.RED);
+		g.fillPolygon(flag);
+		g.setColor(Color.BLACK);
+		g.fillRect(getWidth()/11,getHeight()-35, 2, 20);
 		}
 	}
 //-----------------------------------------------------------------------------------------------------------------------------------
@@ -137,7 +183,7 @@ public class MyPanel extends JPanel {
 		x = x / (INNER_CELL_SIZE + 1);
 		y = y / (INNER_CELL_SIZE + 1);
 
-		if (x < 0 || x > TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS - 1) {   //Outside the rest of the grid
+		if (x < 0 || x > TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS-1 ) {   //Outside the rest of the grid
 			return -1;
 		}
 		return x;
@@ -163,7 +209,7 @@ public class MyPanel extends JPanel {
 		x = x / (INNER_CELL_SIZE + 1);
 		y = y / (INNER_CELL_SIZE + 1);
 
-		if (x < 0 || x> TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS - 1) {   //Outside the rest of the grid
+		if (x < 0 || x> TOTAL_COLUMNS - 1 || y < 0 || y > TOTAL_ROWS-1 ) {   //Outside the rest of the grid
 			return -1;
 		}
 		return y;
@@ -203,7 +249,7 @@ public class MyPanel extends JPanel {
 			for (int x = 0; x < 9; x++){
 				for(int y = 0; y < 9; y++){
 					if (mineArray[x][y] == MINE){
-						colorArray[x][y] = Color.BLACK;		
+						colorArray[x][y] = Color.WHITE;		
 					}
 				}
 			}
@@ -270,6 +316,9 @@ public class MyPanel extends JPanel {
 					hiddenArray[x][y] = true;
 				}
 			}
+			totalMines=10;
+			winGameStatus = false;
+			flagCounter=10;
 		}
 	//----------------------------------------------------------------------------------------------------------------------------------
 	//Method sets mines on 10 random positions
@@ -292,7 +341,10 @@ public class MyPanel extends JPanel {
 	//Method that runs when a mouse is pressed on a grid with a left click. 
 	
 	public void selectGrid(int x, int y){
-		if(hiddenArray[x][y] && colorArray[x][y] != Color.RED){ //Grid is hidden and isn't a flag
+//		if((x>=0&&x<=8)&&y>=9){
+//			gameLost();
+//		}
+		if((hiddenArray[x][y] && colorArray[x][y] != Color.YELLOW)){ //Grid is hidden and isn't a flag
 			if(mineArray[x][y] == MINE){
 				gameLost();
 			}else{
@@ -300,7 +352,7 @@ public class MyPanel extends JPanel {
 					colorArray[x][y] = Color.WHITE;
 					hiddenArray[x][y] = false;
 					if(getWinGameStatus()){
-						winGameVar = true;
+						winGameStatus = true;
 						gameWon();
 					}
 				}else if(numberArray[x][y] == 0){
@@ -310,24 +362,24 @@ public class MyPanel extends JPanel {
 		}
 	}
 	//----------------------------------------------------------------------------------------------------------------------------------
-	// Method that runs when a grid pressed with a left click doesn't have mines around.  
+	// Method that runs when a grid is pressed with a left click and doesn't have mines around.  
 	
 	public void openSurroundings(int x, int y){
 
 		if( x < 0 || x > 8 || y < 0 || y > 8) return;
 
-		if (numberArray[x][y] == 0 && hiddenArray[x][y] && colorArray[x][y] != Color.RED){
+		if (numberArray[x][y] == 0 && hiddenArray[x][y] && colorArray[x][y] != Color.YELLOW){
 			hiddenArray[x][y] = false;
 			colorArray[x][y] = Color.WHITE;
 			if(getWinGameStatus()){
-				winGameVar = true;
+				winGameStatus = true;
 				gameWon();
 			}
 			openSurroundings(x + 1, y);
 			openSurroundings(x - 1, y );
 			openSurroundings(x, y - 1);
 			openSurroundings(x, y + 1);
-			openSurroundings(x - 1, y - 1);
+			openSurroundings(x + 1, y + 1);
 			openSurroundings(x + 1, y - 1);
 			openSurroundings(x - 1, y - 1);
 			openSurroundings(x - 1, y + 1);
@@ -350,9 +402,7 @@ public class MyPanel extends JPanel {
 		if(confirmation == JOptionPane.YES_OPTION){
 			JOptionPane.showMessageDialog(null, "Let's get ready!");
 			resetGame();
-			totalMines=10;
 			setGame();
-
 		}
 		else{
 			JOptionPane.showMessageDialog(null, "Thank You for playing!");
@@ -371,7 +421,6 @@ public class MyPanel extends JPanel {
 		if(buttonPressed == JOptionPane.YES_OPTION){
 			JOptionPane.showMessageDialog(null, "Let's get started");
 			resetGame();
-			totalMines=10;
 			setGame();
 		}
 		else{
@@ -409,5 +458,3 @@ public class MyPanel extends JPanel {
 		}
 
 }
-
-
