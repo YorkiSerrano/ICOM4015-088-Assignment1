@@ -3,14 +3,12 @@ import java.awt.Component;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import javax.swing.JFrame;
-
 
 public class MyMouseAdapter extends MouseAdapter {
 
 	//----------------------------------------------------------------------------------------------------------------------------------
-	//Mouse Pressed
+	//Mouse Press
 	public void mousePressed(MouseEvent e) {
 		Component c = e.getComponent();
 		while (!(c instanceof JFrame)) {
@@ -34,10 +32,8 @@ public class MyMouseAdapter extends MouseAdapter {
 		myPanel.repaint();
 		switch (e.getButton()) {
 		case 1:		//Left mouse button
-
 			break; 
 		case 3:		//right mouse button
-
 			break;
 		default:    
 			//Do nothing
@@ -45,7 +41,7 @@ public class MyMouseAdapter extends MouseAdapter {
 		}
 	}
 	//----------------------------------------------------------------------------------------------------------------------------------
-	//Mouse Released
+	//Mouse Release
 	public void mouseReleased(MouseEvent e) {
 		Component c = e.getComponent();
 		while (!(c instanceof JFrame)) {
@@ -99,14 +95,13 @@ public class MyMouseAdapter extends MouseAdapter {
 
 						if(myPanel.colorArray[myPanel.mouseDownGridX][myPanel.mouseDownGridY] != Color.WHITE){
 
-
 							if((myPanel.colorArray[myPanel.mouseDownGridX][ myPanel.mouseDownGridY]==Color.YELLOW)){
-								//remove flag
+								//Remove Flag
 								myPanel.colorArray[myPanel.mouseDownGridX][ myPanel.mouseDownGridY]=Color.LIGHT_GRAY;
 								myPanel.repaint();
 								myPanel.flagCounter++;
 							}else{
-								//set flag
+								//Set Flag
 								myPanel.colorArray[myPanel.mouseDownGridX][ myPanel.mouseDownGridY]=Color.YELLOW;
 								myPanel.repaint();
 								myPanel.flagCounter--;
